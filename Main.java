@@ -1,4 +1,8 @@
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.nio.file.*;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Main {
@@ -37,11 +41,39 @@ public class Main {
     System.out.println("help                : Display this help message.");
   }
 
-  // not commplete
-  public static Path changeDirectory(String path) {
-    Path newPath = Paths.get(path);
-    newPath = newPath.toAbsolutePath().normalize();
-    return newPath;
+  public static Path changeDirectory(String path, Path currentDirectory) {
+    Path newPath = currentDirectory.resolve(path).normalize();
+    if (Files.exists(newPath) && Files.isDirectory(newPath)) {
+      return newPath;
+    } else {
+      System.out.println("The system cannot find the path specified");
+    }
+    return currentDirectory;
+  }
+
+  public static void overWrite(
+    ArrayList<String> contents,
+    String fileName,
+    Path currentDirectory
+  ) {
+    Path newPath = currentDirectory.resolve(fileName).normalize();
+    if (true) {
+      try {
+        File fileController = new File(newPath.toString());
+        fileController.createNewFile();
+        FileWriter myWriter = new FileWriter(newPath.toString());
+        contents.forEach(line -> {
+          try {
+            myWriter.write(line+"\n");
+          } catch (IOException ex) {
+            System.out.println("The specified path is invalid");
+          }
+        });
+        myWriter.close();
+      } catch (IOException e) {
+        System.out.println("The specified path is invalid");
+      }
+    }
   }
 
   public static void main(String[] args) {
@@ -49,25 +81,46 @@ public class Main {
     Path currentDirectory = Paths.get(System.getProperty("user.dir"));
     Scanner input = new Scanner(System.in);
     boolean run = true;
+    ArrayList<String> content = new ArrayList<>();
+    content.add("line_1");
+    content.add("line_2");
+    content.add("line_3");
+    overWrite(content, "file.txt", currentDirectory);
     while (run) {
       System.out.println(currentDirectory);
       System.out.print(" >");
       String line = input.nextLine();
       String[] commandParts = line.split("\\s+");
       String command = commandParts[0].toLowerCase();
-      String[] commandArgs = new String[commandParts.length - 1];
-      for (int i = 0; i < commandArgs.length; i++) {
-        commandArgs[i] = commandParts[i + 1];
+      ArrayList<String> commandArgs = new ArrayList<>();
+      String handleQutations = "";
+      //handle arguments
+      for (int i = 1; i < commandParts.length; i++) {
+        String currentString = commandParts[i];
+        if (currentString.charAt(0) != '\"' && handleQutations.isEmpty()) {
+          commandArgs.add(currentString);
+        } else if (
+          currentString.charAt(0) == '\"' || !handleQutations.isEmpty()
+        ) {
+          handleQutations += " " + currentString;
+        }
+        if (handleQutations.endsWith("\"")) {
+          commandArgs.add(
+            handleQutations.substring(2, handleQutations.length() - 1) // Deletet first space and " and last "
+          );
+          handleQutations = "";
+        }
       }
+
       switch (command) {
         // Mohamed
         case "ls" -> {
+          // System.out.println(commandArgs.toString());
           // You Will Put The Function and handle 3 casses
           // first arrgument is -a
           // first arrgument is -r
           // normal
         }
-        
         // mustafa
         case "mkdir" -> {
           // You Will Put The Function and handle 3 casses
@@ -78,23 +131,23 @@ public class Main {
         case "rm" -> {
           // You Will Put The Function and handle 3 casses
         }
-        
         // mahmoud
         // case "touch" -> {}
         // case "mv" -> {}
-        
+
         // Tolba
         // case "cat" -> {}
         case "pwd" -> {
           System.out.println(currentDirectory);
         }
         case "cd" -> {
-          if (commandArgs.length == 0) {
+          if (commandArgs.isEmpty()) {
             System.out.println(currentDirectory);
-          } else if (commandArgs.length != 1) {
+          } else if (commandArgs.size() != 1) {
             System.out.println("The system cannot find the path specified.");
           } else {
-            currentDirectory = changeDirectory(commandArgs[0]);
+            currentDirectory =
+              changeDirectory(commandArgs.get(0), currentDirectory);
           }
         }
         case "help" -> {
@@ -111,5 +164,6 @@ public class Main {
         }
       }
     }
+    input.close();
   }
 }
