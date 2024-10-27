@@ -235,21 +235,21 @@ public class Main {
         // mustafa
         case "mkdir" -> {
          if (commandArgs.isEmpty()) {
-        System.out.println("Please specify one or more directories to create.");
+        System.out.println("at least you should write one argument.");
     } else {
         makeDirectory(commandArgs, currentDirectory);
     }
         }
         case "rmdir" -> {
           if (commandArgs.isEmpty()) {
-        System.out.println("Please specify one or more directories to remove.");
+        System.out.println("at least you should write one argument to remove.");
     } else {
         removeDirectory(commandArgs, currentDirectory);
     }
         }
         case "rm" -> {
           if (commandArgs.isEmpty()) {
-        System.out.println("Please specify one or more files to remove.");
+        System.out.println("at least you should write one file remove.");
     } else {
         removeFile(commandArgs, currentDirectory);
     }
