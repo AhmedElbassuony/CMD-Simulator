@@ -7,6 +7,31 @@ import java.util.Scanner;
 
 public class Main {
 
+  public static void touch(ArrayList<String> commandArgs, String currentDir) {
+      for(String f:commandArgs) {
+            String file = f;
+            if (!Paths.get(f).isAbsolute()) {
+                file = currentDir + "\\" + f;
+            }
+            StringBuilder s = new StringBuilder();
+            for(int i = 0; i < file.length(); i++) {
+                s.append(file.charAt(i));
+                if(file.charAt(i) == '\\') s = new StringBuilder();
+            }
+            if(s.toString().length() > 255) {
+                System.out.println("touch: cannot touch '" + s.toString() + " ': File name too long");
+                continue;
+            }
+            Path p = Paths.get(file);
+          try {
+              if(Files.exists(p)) Files.delete(p);
+              Files.createFile(p);
+          } catch(IOException e) {
+              System.out.println("touch: cannot touch '" + p + "': No such file or directory");
+          }  
+      }
+  }
+
   public static void displayHelp() {
     System.out.println("Available commands:");
     System.out.println("cd [directory]       : Change the current directory.");
@@ -181,7 +206,9 @@ public class Main {
         }
         }
         // mahmoud
-        // case "touch" -> {}
+        case "touch" -> {
+          touch(commandArgs, currentDirectory.toString());
+        }
         // case "mv" -> {}
 
         // Tolba
