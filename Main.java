@@ -57,22 +57,22 @@ public class Main {
     Path currentDirectory
   ) {
     Path newPath = currentDirectory.resolve(fileName).normalize();
-    if (true) {
-      try {
-        File fileController = new File(newPath.toString());
-        fileController.createNewFile();
-        FileWriter myWriter = new FileWriter(newPath.toString());
-        contents.forEach(line -> {
-          try {
-            myWriter.write(line+"\n");
-          } catch (IOException ex) {
-            System.out.println("The specified path is invalid");
-          }
-        });
-        myWriter.close();
-      } catch (IOException e) {
-        System.out.println("The specified path is invalid");
-      }
+    try {
+      // Create File If There is file nothing will happend
+      File fileController = new File(newPath.toString());
+      fileController.createNewFile();
+      // write on file
+      FileWriter myWriter = new FileWriter(newPath.toString());
+      contents.forEach(line -> {
+        try {
+          myWriter.write(line + "\n");
+        } catch (IOException ex) {
+          System.out.println("The specified path is invalid");
+        }
+      });
+      myWriter.close();
+    } catch (IOException e) {
+      System.out.println("The specified path is invalid");
     }
   }
 
