@@ -98,6 +98,31 @@ public class Main {
     }
   }
 
+  public static void appendWrite(
+    ArrayList<String> contents,
+    String fileName,
+    Path currentDirectory
+  ) {
+    try {
+      Path newPath = currentDirectory.resolve(fileName).normalize();
+      // Create File If There is file nothing will happend
+      File fileController = new File(newPath.toString());
+      fileController.createNewFile();
+      // write on file
+      FileWriter myWriter = new FileWriter(newPath.toString(), true);
+      contents.forEach(line -> {
+        try {
+          myWriter.write(line + "\n");
+        } catch (IOException ex) {
+          System.out.println("The specified path is invalid");
+        }
+      });
+      myWriter.close();
+    } catch (IOException e) {
+      System.out.println("The specified path is invalid");
+    }
+  }
+
   public static void makeDirectory(String dirName, Path currentDirectory) {
     Path newDir = currentDirectory.resolve(dirName).normalize();
     try {
@@ -139,8 +164,8 @@ public class Main {
   public static void main(String[] args) {
     // CMD cmd = new CMD();
     Path currentDirectory = Paths.get(System.getProperty("user.dir"));
-    Scanner input = new Scanner(System.in);
     boolean run = true;
+    Scanner input = new Scanner(System.in);
     // overWrite(content, "file.txt", currentDirectory);
     while (run) {
       System.out.println(currentDirectory);
@@ -207,31 +232,64 @@ public class Main {
         case "cat" -> {
           if (commandArgs.isEmpty()) {
             System.out.println("Get-Content at command(Enter X To Get Out)");
-            Scanner catInput = new Scanner(System.in);
+            // Scanner catInput = new Scanner(System.in);
             boolean catRun = true;
             while (catRun) {
-              String output = catInput.nextLine();
+              String output = input.nextLine();
               if (output.toLowerCase().equals("x")) {
                 break;
               }
               System.out.println("$" + output);
             }
-            catInput.close();
+          } else if (
+            commandArgs.size() == 2 &&
+            (commandArgs.get(0).equals(">") || commandArgs.get(0).equals(">>")) // will take input and put it in file
+          ) {
+            System.out.println("Get-Content at command(Enter X To Get Out)");
+            ArrayList<String> outputToFile = new ArrayList<>();
+            boolean catRun = true;
+            while (catRun) {
+              String output = input.nextLine();
+              if (output.toLowerCase().equals("x")) {
+                break;
+              }
+              outputToFile.add(output);
+            }
+            if (commandArgs.get(0).equals(">")) overWrite(
+              outputToFile,
+              commandArgs.get(1),
+              currentDirectory
+            ); else appendWrite(
+              outputToFile,
+              commandArgs.get(1),
+              currentDirectory
+            );
           } else {
             ArrayList<String> outputStrings = new ArrayList<>(); // save content of all files
             boolean overWriteOperator = false; // if i have overwrite operator then i will not print content
             for (int i = 0; i < commandArgs.size(); i++) {
-              if (commandArgs.get(i).equals(">")) { // Handle OverWrite Operator
+              if (
+                commandArgs.get(i).equals(">") ||
+                commandArgs.get(i).equals(">>")
+              ) { // Handle OverWrite Operator
                 if (i == commandArgs.size() - 1) { // if there is no argument for file
                   System.out.println("MissingFileSpecification");
                 } else if (i != commandArgs.size() - 2) { // if there more than one path
                   System.out.println("Cannot find path");
                 } else { // right case
-                  overWrite(
-                    outputStrings,
-                    commandArgs.get(i + 1),
-                    currentDirectory
-                  );
+                  if (commandArgs.get(i).equals(">")) {
+                    overWrite(
+                      outputStrings,
+                      commandArgs.get(i + 1),
+                      currentDirectory
+                    );
+                  } else {
+                    appendWrite(
+                      outputStrings,
+                      commandArgs.get(i + 1),
+                      currentDirectory
+                    );
+                  }
                   overWriteOperator = true;
                   break;
                 }
