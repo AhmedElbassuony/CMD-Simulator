@@ -8,6 +8,38 @@ import java.util.Scanner;
 
 public class Main {
 
+  public static void mv(ArrayList<String> commandArgs, String currentDir) {
+      if(commandArgs.size() == 1) {
+          System.out.println("mv: missing destination file operand after '" + commandArgs.get(0) + "'");
+          return;
+      }
+      if(commandArgs.size() > 2) {
+          System.out.println("mv: target '" + commandArgs.getLast() + "' is not a directory");
+          return;
+      }
+      String src = commandArgs.get(0);
+      String dist = commandArgs.get(1);
+      if (!Paths.get(src).isAbsolute()) {
+          src = currentDir + "\\" + src;
+      }
+      if (!Paths.get(dist).isAbsolute()) {
+          dist = currentDir + "\\" + dist;
+      }
+      if(!Files.exists(Paths.get(src))) {
+          System.out.println("mv: cannot stat '" + commandArgs.get(0) + "': No such file or directory");
+          return;
+      }
+
+      try {
+          Path srcP = Paths.get(src);
+          Path distP = Paths.get(dist);
+          Files.move(srcP, distP, StandardCopyOption.REPLACE_EXISTING);
+      } catch (IOException e) {
+          System.out.println("mv: cannot move '" + commandArgs.get(0) + "'to '" + commandArgs.get(1) + "': No such file or directory");
+      }
+      
+  }
+
   public static void touch(ArrayList<String> commandArgs, String currentDir) {
       for(String f:commandArgs) {
             String file = f;
@@ -253,7 +285,9 @@ public class Main {
         case "touch" -> {
           touch(commandArgs, currentDirectory.toString());
         }
-        // case "mv" -> {}
+        case "mv" -> {
+          mv(commandArgs, currentDirectory.toString());
+        }
 
         // Tolba
         case "cat" -> {
