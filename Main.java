@@ -111,6 +111,43 @@ public class Main {
           handleQutations = "";
         }
       }
+      public static void makeDirectory(String dirName, Path currentDirectory) {
+    Path newDir = currentDirectory.resolve(dirName).normalize();
+    try {
+        Files.createDirectory(newDir);
+        System.out.println("Directory created: " + newDir);
+    } catch (FileAlreadyExistsException e) {
+        System.out.println("The directory already exists.");
+    } catch (IOException e) {
+        System.out.println("Failed to create the directory.");
+    }
+}
+
+      public static void removeDirectory(String dirName, Path currentDirectory) {
+    Path dirPath = currentDirectory.resolve(dirName).normalize();
+    try {
+        Files.delete(dirPath);
+        System.out.println("Directory removed: " + dirPath);
+    } catch (NoSuchFileException e) {
+        System.out.println("The directory does not exist.");
+    } catch (DirectoryNotEmptyException e) {
+        System.out.println("The directory is not empty.");
+    } catch (IOException e) {
+        System.out.println("Failed to remove the directory.");
+    }
+}
+      public static void removeFile(String fileName, Path currentDirectory) {
+    Path filePath = currentDirectory.resolve(fileName).normalize();
+    try {
+        Files.delete(filePath);
+        System.out.println("File removed: " + filePath);
+    } catch (NoSuchFileException e) {
+        System.out.println("The file does not exist.");
+    } catch (IOException e) {
+        System.out.println("Failed to remove the file.");
+    }
+}
+      
 
       switch (command) {
         // Mohamed
@@ -123,13 +160,25 @@ public class Main {
         }
         // mustafa
         case "mkdir" -> {
-          // You Will Put The Function and handle 3 casses
+          if (commandArgs.size() != 1) {
+            System.out.println(" number of arguments should be one .");
+        } else {
+            makeDirectory(commandArgs.get(0), currentDirectory);
+        }
         }
         case "rmdir" -> {
-          // You Will Put The Function and handle 3 casses
+         if (commandArgs.size() != 1) {
+            System.out.println(" number of arguments should be one .");
+        } else {
+            removeDirectory(commandArgs.get(0), currentDirectory);
+        }
         }
         case "rm" -> {
-          // You Will Put The Function and handle 3 casses
+           if (commandArgs.size() != 1) {
+            System.out.println(" number of arguments should be one .");
+        } else {
+            removeFile(commandArgs.get(0), currentDirectory);
+        }
         }
         // mahmoud
         // case "touch" -> {}
