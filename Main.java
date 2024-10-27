@@ -258,12 +258,37 @@ public class Main {
       switch (command) {
         // Mohamed
         case "ls" -> {
-          // System.out.println(commandArgs.toString());
-          // You Will Put The Function and handle 3 casses
-          // first arrgument is -a
-          // first arrgument is -r
-          // normal
-        }
+              boolean displayAll = commandArgs.contains("-a");
+              boolean shouldReverse = commandArgs.contains("-r");
+          
+              // Check if the current directory exists and is a directory
+              if (Files.exists(currentDirectory) && Files.isDirectory(currentDirectory)) {
+                  try (Stream<Path> paths = Files.list(currentDirectory)) {
+                      List<String> files = paths
+                          .filter(path -> displayAll || !path.getFileName().toString().startsWith("."))
+                          .map(Path::getFileName)
+                          .map(Path::toString)
+                          .collect(Collectors.toList());
+          
+                      // Reverse the list if the -r flag is present
+                      if (shouldReverse) {
+                          Collections.reverse(files);
+                      }
+          
+                      // Output the files or a message if none are found
+                      if (files.isEmpty()) {
+                          System.out.println("No files found.");
+                      } else {
+                          files.forEach(System.out::println);
+                      }
+                  } catch (IOException e) {
+                      System.err.println("Error reading directory: " + e.getMessage());
+                  }
+              } else {
+                  System.err.println("The specified directory does not exist or is not a directory.");
+              }
+          }
+
         // mustafa
         case "mkdir" -> {
          if (commandArgs.isEmpty()) {
