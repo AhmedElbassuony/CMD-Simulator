@@ -1,4 +1,5 @@
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.*;
@@ -42,13 +43,34 @@ public class Main {
   }
 
   public static Path changeDirectory(String path, Path currentDirectory) {
-    Path newPath = currentDirectory.resolve(path).normalize();
-    if (Files.exists(newPath) && Files.isDirectory(newPath)) {
-      return newPath;
-    } else {
+    try {
+      Path newPath = currentDirectory.resolve(path).normalize();
+      if (Files.exists(newPath) && Files.isDirectory(newPath)) {
+        return newPath;
+      }
+      throw new FileNotFoundException();
+    } catch (Exception e) {
       System.out.println("The system cannot find the path specified");
     }
     return currentDirectory;
+  }
+
+  public static ArrayList<String> readFile(
+    Path newPath,
+    ArrayList<String> array
+  ) {
+    try {
+      File fileController = new File(newPath.toString());
+      Scanner fileContent = new Scanner(fileController);
+      while (fileContent.hasNextLine()) {
+        array.add(fileContent.nextLine());
+      }
+      fileContent.close();
+    } catch (FileNotFoundException e) {
+      return array;
+    }
+
+    return array;
   }
 
   public static void overWrite(
@@ -56,8 +78,8 @@ public class Main {
     String fileName,
     Path currentDirectory
   ) {
-    Path newPath = currentDirectory.resolve(fileName).normalize();
     try {
+      Path newPath = currentDirectory.resolve(fileName).normalize();
       // Create File If There is file nothing will happend
       File fileController = new File(newPath.toString());
       fileController.createNewFile();
@@ -76,16 +98,50 @@ public class Main {
     }
   }
 
+  public static void makeDirectory(String dirName, Path currentDirectory) {
+    Path newDir = currentDirectory.resolve(dirName).normalize();
+    try {
+      Files.createDirectory(newDir);
+      System.out.println("Directory created: " + newDir);
+    } catch (FileAlreadyExistsException e) {
+      System.out.println("The directory already exists.");
+    } catch (IOException e) {
+      System.out.println("Failed to create the directory.");
+    }
+  }
+
+  public static void removeDirectory(String dirName, Path currentDirectory) {
+    Path dirPath = currentDirectory.resolve(dirName).normalize();
+    try {
+      Files.delete(dirPath);
+      System.out.println("Directory removed: " + dirPath);
+    } catch (NoSuchFileException e) {
+      System.out.println("The directory does not exist.");
+    } catch (DirectoryNotEmptyException e) {
+      System.out.println("The directory is not empty.");
+    } catch (IOException e) {
+      System.out.println("Failed to remove the directory.");
+    }
+  }
+
+  public static void removeFile(String fileName, Path currentDirectory) {
+    Path filePath = currentDirectory.resolve(fileName).normalize();
+    try {
+      Files.delete(filePath);
+      System.out.println("File removed: " + filePath);
+    } catch (NoSuchFileException e) {
+      System.out.println("The file does not exist.");
+    } catch (IOException e) {
+      System.out.println("Failed to remove the file.");
+    }
+  }
+
   public static void main(String[] args) {
     // CMD cmd = new CMD();
     Path currentDirectory = Paths.get(System.getProperty("user.dir"));
     Scanner input = new Scanner(System.in);
     boolean run = true;
-    ArrayList<String> content = new ArrayList<>();
-    content.add("line_1");
-    content.add("line_2");
-    content.add("line_3");
-    overWrite(content, "file.txt", currentDirectory);
+    // overWrite(content, "file.txt", currentDirectory);
     while (run) {
       System.out.println(currentDirectory);
       System.out.print(" >");
@@ -111,43 +167,6 @@ public class Main {
           handleQutations = "";
         }
       }
-      public static void makeDirectory(String dirName, Path currentDirectory) {
-    Path newDir = currentDirectory.resolve(dirName).normalize();
-    try {
-        Files.createDirectory(newDir);
-        System.out.println("Directory created: " + newDir);
-    } catch (FileAlreadyExistsException e) {
-        System.out.println("The directory already exists.");
-    } catch (IOException e) {
-        System.out.println("Failed to create the directory.");
-    }
-}
-
-      public static void removeDirectory(String dirName, Path currentDirectory) {
-    Path dirPath = currentDirectory.resolve(dirName).normalize();
-    try {
-        Files.delete(dirPath);
-        System.out.println("Directory removed: " + dirPath);
-    } catch (NoSuchFileException e) {
-        System.out.println("The directory does not exist.");
-    } catch (DirectoryNotEmptyException e) {
-        System.out.println("The directory is not empty.");
-    } catch (IOException e) {
-        System.out.println("Failed to remove the directory.");
-    }
-}
-      public static void removeFile(String fileName, Path currentDirectory) {
-    Path filePath = currentDirectory.resolve(fileName).normalize();
-    try {
-        Files.delete(filePath);
-        System.out.println("File removed: " + filePath);
-    } catch (NoSuchFileException e) {
-        System.out.println("The file does not exist.");
-    } catch (IOException e) {
-        System.out.println("Failed to remove the file.");
-    }
-}
-      
 
       switch (command) {
         // Mohamed
@@ -162,37 +181,86 @@ public class Main {
         case "mkdir" -> {
           if (commandArgs.size() != 1) {
             System.out.println(" number of arguments should be one .");
-        } else {
+          } else {
             makeDirectory(commandArgs.get(0), currentDirectory);
-        }
+          }
         }
         case "rmdir" -> {
-         if (commandArgs.size() != 1) {
+          if (commandArgs.size() != 1) {
             System.out.println(" number of arguments should be one .");
-        } else {
+          } else {
             removeDirectory(commandArgs.get(0), currentDirectory);
-        }
+          }
         }
         case "rm" -> {
-           if (commandArgs.size() != 1) {
+          if (commandArgs.size() != 1) {
             System.out.println(" number of arguments should be one .");
-        } else {
+          } else {
             removeFile(commandArgs.get(0), currentDirectory);
-        }
+          }
         }
         // mahmoud
         // case "touch" -> {}
         // case "mv" -> {}
 
         // Tolba
-        // case "cat" -> {}
+        case "cat" -> {
+          if (commandArgs.isEmpty()) {
+            System.out.println("Get-Content at command(Enter X To Get Out)");
+            Scanner catInput = new Scanner(System.in);
+            boolean catRun = true;
+            while (catRun) {
+              String output = catInput.nextLine();
+              if (output.toLowerCase().equals("x")) {
+                break;
+              }
+              System.out.println("$" + output);
+            }
+            catInput.close();
+          } else {
+            ArrayList<String> outputStrings = new ArrayList<>(); // save content of all files
+            boolean overWriteOperator = false; // if i have overwrite operator then i will not print content
+            for (int i = 0; i < commandArgs.size(); i++) {
+              if (commandArgs.get(i).equals(">")) { // Handle OverWrite Operator
+                if (i == commandArgs.size() - 1) { // if there is no argument for file
+                  System.out.println("MissingFileSpecification");
+                } else if (i != commandArgs.size() - 2) { // if there more than one path
+                  System.out.println("Cannot find path");
+                } else { // right case
+                  overWrite(
+                    outputStrings,
+                    commandArgs.get(i + 1),
+                    currentDirectory
+                  );
+                  overWriteOperator = true;
+                  break;
+                }
+              }
+              String path = commandArgs.get(i);
+              Path newPath = currentDirectory;
+              try {
+                newPath = currentDirectory.resolve(path).normalize(); // if wrong path will not give error
+                if (Files.exists(newPath) && !Files.isDirectory(newPath)) { // it is not directory or wrong path
+                  outputStrings = readFile(newPath, outputStrings);
+                } else {
+                  throw new FileNotFoundException(); // This path is Directory
+                }
+              } catch (Exception e) {
+                System.out.println("InvalidInput"); // error in file name
+              }
+            }
+            if (!overWriteOperator) outputStrings.forEach(out ->
+              System.out.println(out)
+            );
+          }
+        }
         case "pwd" -> {
           System.out.println(currentDirectory);
         }
         case "cd" -> {
-          if (commandArgs.isEmpty()) {
+          if (commandArgs.isEmpty()) { // can take no argument and then  it will be like pwd
             System.out.println(currentDirectory);
-          } else if (commandArgs.size() != 1) {
+          } else if (commandArgs.size() != 1) { // only one argument
             System.out.println("The system cannot find the path specified.");
           } else {
             currentDirectory =
