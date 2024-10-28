@@ -258,35 +258,69 @@ public class Main {
       switch (command) {
         // Mohamed
         case "ls" -> {
-              boolean displayAll = commandArgs.contains("-a");
-              boolean shouldReverse = commandArgs.contains("-r");
-          
-              // Check if the current directory exists and is a directory
-              if (Files.exists(currentDirectory) && Files.isDirectory(currentDirectory)) {
-                  try (Stream<Path> paths = Files.list(currentDirectory)) {
-                      List<String> files = paths
-                          .filter(path -> displayAll || !path.getFileName().toString().startsWith("."))
-                          .map(Path::getFileName)
-                          .map(Path::toString)
-                          .collect(Collectors.toList());
-          
-                      // Reverse the list if the -r flag is present
-                      if (shouldReverse) {
-                          Collections.reverse(files);
-                      }
-          
-                      // Output the files or a message if none are found
-                      if (files.isEmpty()) {
-                          System.out.println("No files found.");
-                      } else {
-                          files.forEach(System.out::println);
-                      }
-                  } catch (IOException e) {
-                      System.err.println("Error reading directory: " + e.getMessage());
-                  }
-              } else {
-                  System.err.println("The specified directory does not exist or is not a directory.");
-              }
+                    boolean displayAll = commandArgs.contains("-a");   // Show hidden files if -a is present
+                    boolean shouldReverse = commandArgs.contains("-r"); // Reverse order
+
+                    // Check if piping or redirection operators are present
+                    boolean toFile = commandArgs.contains(">") || commandArgs.contains(">>");
+                    boolean append = commandArgs.contains(">>");
+                    boolean isPipe = commandArgs.contains("|");
+
+                    String fileName = null;
+                    String filterPattern = null;
+
+                    // Handle piping or redirection arguments
+                    if (toFile) {
+                        int index = commandArgs.indexOf(">") != -1 ? commandArgs.indexOf(">") : commandArgs.indexOf(">>");
+                        fileName = commandArgs.get(index + 1);
+                        commandArgs = new ArrayList<>(commandArgs.subList(0, index));  // Remove redirection arguments
+                    }
+                    if (isPipe) {
+                        int index = commandArgs.indexOf("|");
+                        filterPattern = commandArgs.get(index + 1);  // The "grep" pattern
+                        commandArgs = new ArrayList<>(commandArgs.subList(0, index));  // Remove pipe arguments
+                    }
+
+                    // Display files in the directory
+                    if (Files.exists(currentDirectory) && Files.isDirectory(currentDirectory)) {
+                        try (Stream<Path> paths = Files.list(currentDirectory)) {
+                            List<String> fileNames = paths
+                                    .filter(path -> displayAll || !path.getFileName().toString().startsWith("."))
+                                    .map(path -> path.getFileName().toString())
+                                    .sorted()
+                                    .collect(Collectors.toList());
+
+                            if (shouldReverse) {
+                                Collections.reverse(fileNames);
+                            }
+
+                            // Apply filter if using piping (simulating `grep`)
+                            /*if (filterPattern != null) {
+                                fileNames = fileNames.stream()
+                                        .filter(name -> name.contains(filterPattern))
+                                        .collect(Collectors.toList());
+                            }*/
+
+                            // Output results based on redirection or direct print
+                            if (toFile) {
+
+                                try (FileWriter writer = new FileWriter(fileName, append)) {
+                                    for (String fileNameOutput : fileNames) {
+                                        writer.write(fileNameOutput + "\n");
+                                    }
+                                } catch (IOException e) {
+                                    System.err.println("Error writing to file: " + e.getMessage());
+                                }
+                            } else {
+                                fileNames.forEach(System.out::println);  // Print directly to console
+                            }
+                        } catch (IOException e) {
+                            System.err.println("Error reading directory: " + e.getMessage());
+                        }
+                    } else {
+                        System.err.println("The specified directory does not exist or is not a directory.");
+                    }
+                }
           }
 
         // mustafa
