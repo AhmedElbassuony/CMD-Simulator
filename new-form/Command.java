@@ -70,7 +70,6 @@ public class Command {
       }
    }
 
-<<<<<<< HEAD
    public void displayHelp() {
     System.out.println("Available commands:");
     System.out.println("cd [directory]       : Change the current directory.");
@@ -244,14 +243,6 @@ public class Command {
          if(cnt == 2) {
             System.out.println("| was unexpected at this time.");
             return;
-=======
-   public static void pipeLine(ArrayList<String> content, ArrayList<String> commands) {
-      boolean more = false;
-      boolean less = false;
-      for(int i = 0; i < commands.size(); i++) {
-         if(commands.get(i).equals("|")) {
-            ++i;
->>>>>>> 5421bbe9c67c403ca7f1863b47e8e96006b2ebfc
          }
          if(i ==commands.size()) {
             System.out.println("The syntax of the command is incorrect.");
@@ -292,19 +283,11 @@ public class Command {
             System.out.println(content.get(i));
          }
          int i = 5;
-<<<<<<< HEAD
-         Scanner input1 = new Scanner(System.in);
-         while(i < content.size()) {
-            System.out.println("--Press m for more--");
-            char c;
-            c = input1.next().charAt(0);
-=======
          Scanner input = new Scanner(System.in);
          while(i < content.size()) {
             System.out.println("--Press m for more--");
             char c;
             c = input.next().charAt(0);
->>>>>>> 5421bbe9c67c403ca7f1863b47e8e96006b2ebfc
             if(c == 'm') {
                ++i;
                System.out.println(content.get(i));

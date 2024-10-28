@@ -16,7 +16,7 @@ public class Main {
          String command = split.getCommand();
          ArrayList<String> commandArgs = split.getCommandArgs();
          Command cmd = new Command(command, commandArgs);
-<<<<<<< HEAD
+
          switch(command) {
             case "mkdir" -> {
                if (commandArgs.isEmpty()) {
@@ -53,9 +53,5 @@ public class Main {
       }
    }
 }
-=======
-      }
-      input.close();
-   }
->>>>>>> 5421bbe9c67c403ca7f1863b47e8e96006b2ebfc
+
 }
