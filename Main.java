@@ -193,7 +193,8 @@ public class Main {
         }
     }
 }
- public static void removeDirectory(ArrayList<String> dirNames, Path currentDirectory) {
+
+  public static void removeDirectory(ArrayList<String> dirNames, Path currentDirectory) {
     for (String dirName : dirNames) {
         Path dirPath = currentDirectory.resolve(dirName).normalize();
         try {
@@ -209,7 +210,7 @@ public class Main {
     }
 }
 
- public static void removeFile(ArrayList<String> fileNames, Path currentDirectory) {
+  public static void removeFile(ArrayList<String> fileNames, Path currentDirectory) {
     for (String fileName : fileNames) {
         Path filePath = currentDirectory.resolve(fileName).normalize();
         try {
@@ -419,6 +420,7 @@ public class Main {
                   break;
                 }
               }
+
               String path = commandArgs.get(i);
               Path newPath = currentDirectory;
               try {
@@ -431,7 +433,9 @@ public class Main {
               } catch (Exception e) {
                 System.out.println("InvalidInput"); // error in file name
               }
+              
             }
+
             if (!overWriteOperator) outputStrings.forEach(out ->
               System.out.println(out)
             );
