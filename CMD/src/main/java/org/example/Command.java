@@ -20,77 +20,56 @@ public class Command {
   }
 
   public void mv(String currentDir) {
-    if (commandArgs.size() == 1) {
-      System.out.println(
-              "mv: missing destination file operand after '" +
-                      commandArgs.get(0) +
-                      "'"
-      );
-      return;
-    }
-    if (commandArgs.size() > 2) {
-      System.out.println(
-              "mv: target '" + commandArgs.getLast() + "' is not a directory"
-      );
-      return;
-    }
-    String src = commandArgs.get(0);
-    String dist = commandArgs.get(1);
-    if (!Paths.get(src).isAbsolute()) {
-      src = currentDir + "\\" + src;
-    }
-    if (!Paths.get(dist).isAbsolute()) {
-      dist = currentDir + "\\" + dist;
-    }
-    if (!Files.exists(Paths.get(src))) {
-      System.out.println(
-              "mv: cannot stat '" +
-                      commandArgs.get(0) +
-                      "': No such file or directory"
-      );
-      return;
-    }
-
     try {
+      if (commandArgs.size() == 1) {
+        throw new Exception("mv: missing destination file operand after '" + commandArgs.get(0) + "'");
+      }
+      if (commandArgs.size() > 2) {
+        throw new Exception("mv: target '" + commandArgs.getLast() + "' is not a directory");
+      }
+      String src = commandArgs.get(0);
+      String dist = commandArgs.get(1);
+      if (!Paths.get(src).isAbsolute()) {
+        src = currentDir + "\\" + src;
+      }
+      if (!Paths.get(dist).isAbsolute()) {
+        dist = currentDir + "\\" + dist;
+      }
+      if (!Files.exists(Paths.get(src))) {
+        throw new Exception("mv: cannot stat '" + commandArgs.get(0) + "': No such file or directory");
+      }
       Path srcP = Paths.get(src);
       Path distP = Paths.get(dist);
       Files.move(srcP, distP, StandardCopyOption.REPLACE_EXISTING);
     } catch (IOException e) {
-      System.out.println(
-              "mv: cannot move '" +
-                      commandArgs.get(0) +
-                      "'to '" +
-                      commandArgs.get(1) +
-                      "': No such file or directory"
-      );
+      System.out.println("mv: cannot move '" + commandArgs.get(0) + "'to '" + commandArgs.get(1) + "': No such file or directory");
+    } catch (Exception e) {
+      System.out.println(e.getMessage());
     }
   }
 
   public void touch(String currentDir) {
     for (String f : commandArgs) {
-      String file = f;
-      if (!Paths.get(f).isAbsolute()) {
-        file = currentDir + "\\" + f;
-      }
-      StringBuilder s = new StringBuilder();
-      for (int i = 0; i < file.length(); i++) {
-        s.append(file.charAt(i));
-        if (file.charAt(i) == '\\') s = new StringBuilder();
-      }
-      if (s.toString().length() > 255) {
-        System.out.println(
-                "touch: cannot touch '" + s.toString() + " ': File name too long"
-        );
-        continue;
-      }
-      Path p = Paths.get(file);
       try {
+        String file = f;
+        if (!Paths.get(f).isAbsolute()) {
+          file = currentDir + "\\" + f;
+        }
+        StringBuilder s = new StringBuilder();
+        for (int i = 0; i < file.length(); i++) {
+          s.append(file.charAt(i));
+          if (file.charAt(i) == '\\') s = new StringBuilder();
+        }
+        if (s.toString().length() > 255) {
+          throw new Exception("touch: cannot touch '" + s.toString() + " ': File name too long");
+        }
+        Path p = Paths.get(file);
         if (Files.exists(p)) Files.delete(p);
         Files.createFile(p);
       } catch (IOException e) {
-        System.out.println(
-                "touch: cannot touch '" + p + "': No such file or directory"
-        );
+        System.out.println("Cannot create '" + f + "': No such path or directory.");
+      } catch (Exception e) {
+        System.out.println(e.getMessage());
       }
     }
   }
@@ -274,12 +253,9 @@ public class Command {
 
   public void makeDirectory(Path currentDirectory) {
     for (String dirName : commandArgs) {
-      Path newDir = currentDirectory.resolve(dirName).normalize();
       try {
+        Path newDir = currentDirectory.resolve(dirName).normalize();
         Files.createDirectory(newDir);
-        System.out.println("Directory created: " + newDir);
-      } catch (FileAlreadyExistsException e) {
-        System.out.println("The directory '" + dirName + "' already exists.");
       } catch (IOException e) {
         System.out.println("Failed to create the directory: " + dirName);
       }
@@ -288,14 +264,9 @@ public class Command {
 
   public void removeDirectory(Path currentDirectory) {
     for (String dirName : commandArgs) {
-      Path dirPath = currentDirectory.resolve(dirName).normalize();
       try {
+        Path dirPath = currentDirectory.resolve(dirName).normalize();
         Files.delete(dirPath);
-        System.out.println("Directory removed: " + dirPath);
-      } catch (NoSuchFileException e) {
-        System.out.println("The directory '" + dirName + "' does not exist.");
-      } catch (DirectoryNotEmptyException e) {
-        System.out.println("The directory '" + dirName + "' is not empty.");
       } catch (IOException e) {
         System.out.println("Failed to remove the directory: " + dirName);
       }
@@ -304,89 +275,90 @@ public class Command {
 
   public void removeFile(Path currentDirectory) {
     for (String fileName : commandArgs) {
-      Path filePath = currentDirectory.resolve(fileName).normalize();
       try {
+        Path filePath = currentDirectory.resolve(fileName).normalize();
+        if (Files.isDirectory(filePath) || !Files.exists(filePath)) {
+          throw new Exception("This Is Not A File");
+        }
         Files.delete(filePath);
-        System.out.println("File removed: " + filePath);
-      } catch (NoSuchFileException e) {
-        System.out.println("The file '" + fileName + "' does not exist.");
-      } catch (IOException e) {
-        System.out.println("Failed to remove the file: " + fileName);
+      } catch (Exception e) {
+        System.out.println(e.getMessage());
       }
     }
   }
 
   public static void pipeLine(ArrayList<String> content, ArrayList<String> commands) {
-    boolean more = false;
-    boolean less = false;
-    int cnt = 0;
-    for (int i = 0; i < commands.size(); i++) {
-      if (commands.get(i).equals("|")) {
-        cnt++;
-        continue;
-      } else {
-        cnt = 0;
-      }
-      if (cnt == 2) {
-        System.out.println("| was unexpected at this time.");
-        return;
-      }
-      if (i == commands.size()) {
-        System.out.println("The syntax of the command is incorrect.");
-        return;
-      }
-      switch (commands.get(i)) {
-        case "unique" -> {
-          content = unique(content);
-        }
-        case "sort" -> {
-          content = sort(content);
-        }
-        case "more" -> {
-          more = true;
-        }
-        case "less" -> {
-          less = true;
-        }
-        case "grep" -> {
-          ++i;
-          if (commands.get(i).equals("|")) {
-            System.out.println("The syntax of the command is incorrect.");
-            return;
-          }
-          content = grep(content, commands.get(i));
-        }
-        default -> {
-          System.out.println("The syntax of the command is incorrect.");
-          return;
-        }
-      }
-    }
-    if (less && more) {
-      System.out.println("The syntax of the command is incorrect.");
-    } else if (more) {
-      for (int i = 0; i < Math.min(5, content.size()); i++) {
-        System.out.println(content.get(i));
-      }
-      int i = 5;
-      Scanner input = new Scanner(System.in);
-      while (i < content.size()) {
-        System.out.println("--Press m for more--");
-        char c;
-        c = input.next().charAt(0);
-        if (c == 'm') {
-          ++i;
-          System.out.println(content.get(i));
+    try {
+      boolean more = false;
+      boolean less = false;
+      int cnt = 0;
+      for (int i = 0; i < commands.size(); i++) {
+        if (commands.get(i).equals("|")) {
+          cnt++;
+          continue;
         } else {
-          System.out.println("--You must press m--");
+          cnt = 0;
+        }
+        if (cnt == 2) {
+          throw new Exception("| was unexpected at this time.");
+        }
+        if (i == commands.size()) {
+          throw new Exception("The syntax of the command is incorrect.");
+        }
+        switch (commands.get(i)) {
+          case "unique" -> {
+            content = unique(content);
+          }
+          case "sort" -> {
+            content = sort(content);
+          }
+          case "more" -> {
+            more = true;
+          }
+          case "less" -> {
+            less = true;
+          }
+          case "grep" -> {
+            ++i;
+            if (commands.get(i).equals("|")) {
+              throw new Exception("The syntax of the command is incorrect.");
+            }
+            content = grep(content, commands.get(i));
+          }
+          default -> {
+            throw new Exception("The syntax of the command is incorrect.");
+          }
+
         }
       }
-    } else if (less) {
-      //---> i do not know yet what I should do
-    } else {
-      for (int i = 0; i < content.size(); i++) {
-        System.out.println(content.get(i));
+      if (less && more) {
+        throw new Exception("The syntax of the command is incorrect.");
+      } else if (more) {
+        for (int i = 0; i < Math.min(5, content.size()); i++) {
+          System.out.println(content.get(i));
+        }
+        int i = 5;
+        Scanner input = new Scanner(System.in);
+        while (i < content.size()) {
+          System.out.println("--Press m for more--");
+          char c;
+          c = input.next().charAt(0);
+          if (c == 'm') {
+            ++i;
+            System.out.println(content.get(i));
+          } else {
+            System.out.println("--You must press m--");
+          }
+        }
+      } else if (less) {
+        //---> i do not know what I should do here
+      } else {
+        for (int i = 0; i < content.size(); i++) {
+          System.out.println(content.get(i));
+        }
       }
+    } catch (Exception e) {
+      System.out.println(e.getMessage());
     }
   }
 

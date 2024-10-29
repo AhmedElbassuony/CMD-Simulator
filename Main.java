@@ -182,12 +182,9 @@ public class Main {
 
   public static void makeDirectory(ArrayList<String> dirNames, Path currentDirectory) {
     for (String dirName : dirNames) {
-        Path newDir = currentDirectory.resolve(dirName).normalize();
-        try {
+      try {
+            Path newDir = currentDirectory.resolve(dirName).normalize();
             Files.createDirectory(newDir);
-            System.out.println("Directory created: " + newDir);
-        } catch (FileAlreadyExistsException e) {
-            System.out.println("The directory '" + dirName + "' already exists.");
         } catch (IOException e) {
             System.out.println("Failed to create the directory: " + dirName);
         }
@@ -196,14 +193,9 @@ public class Main {
 
   public static void removeDirectory(ArrayList<String> dirNames, Path currentDirectory) {
     for (String dirName : dirNames) {
-        Path dirPath = currentDirectory.resolve(dirName).normalize();
-        try {
+      try {
+            Path dirPath = currentDirectory.resolve(dirName).normalize();
             Files.delete(dirPath);
-            System.out.println("Directory removed: " + dirPath);
-        } catch (NoSuchFileException e) {
-            System.out.println("The directory '" + dirName + "' does not exist.");
-        } catch (DirectoryNotEmptyException e) {
-            System.out.println("The directory '" + dirName + "' is not empty.");
         } catch (IOException e) {
             System.out.println("Failed to remove the directory: " + dirName);
         }
@@ -214,12 +206,13 @@ public class Main {
     for (String fileName : fileNames) {
         Path filePath = currentDirectory.resolve(fileName).normalize();
         try {
-            Files.delete(filePath);
-            System.out.println("File removed: " + filePath);
-        } catch (NoSuchFileException e) {
-            System.out.println("The file '" + fileName + "' does not exist.");
-        } catch (IOException e) {
-            System.out.println("Failed to remove the file: " + fileName);
+          if(Files.isDirectory(filePath)){
+            throw new Exception("This Is Not A File");
+          }
+          Files.delete(filePath);
+        } 
+        catch (Exception e) {
+            System.out.println(e.getMessage());
         }
     }
 }
