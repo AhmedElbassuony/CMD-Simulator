@@ -16,57 +16,57 @@ public class Command {
       this.commandArgs = commandArgs;
    }
    public void mv(String currentDir) {
-      if(commandArgs.size() == 1) {
-          System.out.println("mv: missing destination file operand after '" + commandArgs.get(0) + "'");
-          return;
-      }
-      if(commandArgs.size() > 2) {
-          System.out.println("mv: target '" + commandArgs.getLast() + "' is not a directory");
-          return;
-      }
-      String src = commandArgs.get(0);
-      String dist = commandArgs.get(1);
-      if (!Paths.get(src).isAbsolute()) {
-          src = currentDir + "\\" + src;
-      }
-      if (!Paths.get(dist).isAbsolute()) {
-          dist = currentDir + "\\" + dist;
-      }
-      if(!Files.exists(Paths.get(src))) {
-          System.out.println("mv: cannot stat '" + commandArgs.get(0) + "': No such file or directory");
-          return;
-      }
 
       try {
+            if(commandArgs.size() == 1) {
+               throw new Exception("mv: missing destination file operand after '" + commandArgs.get(0) + "'");
+            }
+            if(commandArgs.size() > 2) {
+               throw new Exception("mv: target '" + commandArgs.getLast() + "' is not a directory");
+            }
+            String src = commandArgs.get(0);
+            String dist = commandArgs.get(1);
+            if (!Paths.get(src).isAbsolute()) {
+               src = currentDir + "\\" + src;
+            }
+            if (!Paths.get(dist).isAbsolute()) {
+               dist = currentDir + "\\" + dist;
+            }
+            if(!Files.exists(Paths.get(src))) {
+               throw new Exception("mv: cannot stat '" + commandArgs.get(0) + "': No such file or directory");
+            }
           Path srcP = Paths.get(src);
           Path distP = Paths.get(dist);
           Files.move(srcP, distP, StandardCopyOption.REPLACE_EXISTING);
       } catch (IOException e) {
           System.out.println("mv: cannot move '" + commandArgs.get(0) + "'to '" + commandArgs.get(1) + "': No such file or directory");
+      } catch (Exception e) {
+         System.out.println(e.getMessage());
       }
    }
    public void touch(String currentDir) {
       for(String f:commandArgs) {
-            String file = f;
-            if (!Paths.get(f).isAbsolute()) {
-                file = currentDir + "\\" + f;
-            }
-            StringBuilder s = new StringBuilder();
-            for(int i = 0; i < file.length(); i++) {
-                s.append(file.charAt(i));
-                if(file.charAt(i) == '\\') s = new StringBuilder();
-            }
-            if(s.toString().length() > 255) {
-                System.out.println("touch: cannot touch '" + s.toString() + " ': File name too long");
-                continue;
-            }
-            Path p = Paths.get(file);
           try {
-              if(Files.exists(p)) Files.delete(p);
-              Files.createFile(p);
+               String file = f;
+               if (!Paths.get(f).isAbsolute()) {
+                  file = currentDir + "\\" + f;
+               }
+               StringBuilder s = new StringBuilder();
+               for(int i = 0; i < file.length(); i++) {
+                  s.append(file.charAt(i));
+                  if(file.charAt(i) == '\\') s = new StringBuilder();
+               }
+               if(s.toString().length() > 255) {
+                  throw new Exception("touch: cannot touch '" + s.toString() + " ': File name too long");
+               }
+               Path p = Paths.get(file);
+               if(Files.exists(p)) Files.delete(p);
+               Files.createFile(p);      
           } catch(IOException e) {
-              System.out.println("touch: cannot touch '" + p + "': No such file or directory");
-          }  
+              System.out.println("Cannot create '" + f + "': No such path or directory.");
+          } catch (Exception e) {
+            System.out.println(e.getMessage());
+         }
       }
    }
 
@@ -230,7 +230,8 @@ public class Command {
 
 
    public static void pipeLine(ArrayList<String> content, ArrayList<String> commands) {
-      boolean more = false;
+      try {
+               boolean more = false;
       boolean less = false;
       int cnt = 0;
       for(int i = 0; i < commands.size(); i++) {
@@ -241,12 +242,10 @@ public class Command {
             cnt = 0;
          }
          if(cnt == 2) {
-            System.out.println("| was unexpected at this time.");
-            return;
+            throw new Exception("| was unexpected at this time.");
          }
          if(i ==commands.size()) {
-            System.out.println("The syntax of the command is incorrect.");
-            return;
+            throw new Exception("The syntax of the command is incorrect.");
          }
          switch(commands.get(i)) {
             case "unique" -> {
@@ -264,20 +263,18 @@ public class Command {
             case "grep" -> {
                ++i;
                if(commands.get(i).equals("|")) {
-                  System.out.println("The syntax of the command is incorrect.");
-                  return;
+                  throw new Exception("The syntax of the command is incorrect.");
                }
                content = grep(content, commands.get(i));
             }
             default -> {
-               System.out.println("The syntax of the command is incorrect.");
-               return;
+               throw new Exception("The syntax of the command is incorrect.");
             }
 
          }
       }
       if(less && more) {
-         System.out.println("The syntax of the command is incorrect.");
+         throw new Exception("The syntax of the command is incorrect.");
       } else if (more) {
          for(int i = 0; i < Math.min(5, content.size()); i++) {
             System.out.println(content.get(i));
@@ -301,6 +298,9 @@ public class Command {
          for(int i = 0; i < content.size(); i++) {
             System.out.println(content.get(i));
          }
+      }
+      } catch (Exception e) {
+         System.out.println(e.getMessage());
       }
    }
    public static ArrayList<String> unique(ArrayList<String> content) {
@@ -329,8 +329,4 @@ public class Command {
       }
       return tmp;
    }
-
-
-
-
 }
