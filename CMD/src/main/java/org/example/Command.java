@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.Scanner;
 
 public class Command {
@@ -160,7 +161,11 @@ public class Command {
       }
     } else {
       ArrayList<String> subCommandArgs = new ArrayList<>(commandArgs.subList(index, commandArgs.size()));
-      pipeLine(content, subCommandArgs);
+      try {
+        pipeLine(content, subCommandArgs);
+      } catch(Exception e) {
+        System.out.println(e.getMessage());
+      }
     }
   }
 
@@ -281,23 +286,22 @@ public class Command {
     }
   }
 
-  public static void pipeLine(ArrayList<String> content, ArrayList<String> commands) {
-    try {
+  public static void pipeLine(ArrayList<String> content, ArrayList<String> commands) throws Exception {
+
       boolean more = false;
-      boolean less = false;
       int cnt = 0;
       for (int i = 0; i < commands.size(); i++) {
+
         if (commands.get(i).equals("|")) {
           cnt++;
-          continue;
         } else {
           cnt = 0;
         }
         if (cnt == 2) {
           throw new Exception("| was unexpected at this time.");
         }
-        if (i == commands.size()) {
-          throw new Exception("The syntax of the command is incorrect.");
+        if(cnt == 1) {
+          continue;
         }
         switch (commands.get(i)) {
           case "unique" -> {
@@ -309,11 +313,11 @@ public class Command {
           case "more" -> {
             more = true;
           }
-          case "less" -> {
-            less = true;
-          }
           case "grep" -> {
             ++i;
+            if (i == commands.size()) {
+              throw new Exception("The syntax of the command is incorrect.");
+            }
             if (commands.get(i).equals("|")) {
               throw new Exception("The syntax of the command is incorrect.");
             }
@@ -325,9 +329,10 @@ public class Command {
 
         }
       }
-      if (less && more) {
-        throw new Exception("The syntax of the command is incorrect.");
-      } else if (more) {
+      if(cnt == 1) {
+        throw new Exception("The syntax of the command is incorrect");
+      }
+      if (more) {
         for (int i = 0; i < Math.min(5, content.size()); i++) {
           System.out.println(content.get(i));
         }
@@ -344,30 +349,17 @@ public class Command {
             System.out.println("--You must press m--");
           }
         }
-      } else if (less) {
-        //---> i do not know what I should do here
       } else {
         for (int i = 0; i < content.size(); i++) {
           System.out.println(content.get(i));
         }
       }
-    } catch (Exception e) {
-      System.out.println(e.getMessage());
-    }
   }
 
   public static ArrayList<String> unique(ArrayList<String> content) {
-    ArrayList<String> tmp = new ArrayList<>();
-    Collections.sort(content);
-    if (!content.isEmpty()) {
-      tmp.add(content.get(0));
-      for (int i = 1; i < content.size(); i++) {
-        if (i > 0 && content.get(i) != content.get(i - 1)) {
-          tmp.add(content.get(i));
-        }
-      }
-    }
-    return tmp;
+    LinkedHashSet<String> tmp = new LinkedHashSet<>(content);
+    return new ArrayList<>(tmp);
+
   }
 
   public static ArrayList<String> sort(ArrayList<String> content) {
@@ -377,9 +369,9 @@ public class Command {
 
   public static ArrayList<String> grep(ArrayList<String> content, String part) {
     ArrayList<String> tmp = new ArrayList<>();
-    for (int i = 0; i < content.size(); i++) {
-      if (content.get(i).contains(part)) {
-        tmp.add(content.get(i));
+    for (String s:content) {
+      if (s.contains(part)) {
+        tmp.add(s);
       }
     }
     return tmp;
