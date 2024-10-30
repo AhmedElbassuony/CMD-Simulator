@@ -43,6 +43,7 @@ public class CommandTest {
 
         
 }
+  @Test
  public void testRemoveFile() {
         
         Path testFile = Paths.get(System.getProperty("user.dir")).resolve("testFile.txt");
