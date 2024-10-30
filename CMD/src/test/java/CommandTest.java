@@ -20,7 +20,7 @@ public class CommandTest {
         Main.removeDirectory(new ArrayList<>(List.of("testDir")), Paths.get(System.getProperty("user.dir")));
 
        
-        assertTrue(Files.exists(testDir), "The directory should still exist because it is not a file");
+        assertTrue(Files.exists(testDir), "The directory should get removed");
     }
 }
   @Test
