@@ -19,8 +19,7 @@ public class Command {
     this.commandArgs = commandArgs;
   }
 
-  public void mv(String currentDir) {
-    try {
+  public void mv(String currentDir) throws Exception {
       if(commandArgs.isEmpty()) {
         throw new Exception("mv: missing file operand\nTry 'mv --help' for more information.");
       }
@@ -44,11 +43,6 @@ public class Command {
       Path srcP = Paths.get(src);
       Path distP = Paths.get(dist);
       Files.move(srcP, distP, StandardCopyOption.REPLACE_EXISTING);
-    } catch (IOException e) {
-      System.out.println("mv: cannot move '" + commandArgs.get(0) + "'to '" + commandArgs.get(1) + "': No such file or directory");
-    } catch (Exception e) {
-      System.out.println(e.getMessage());
-    }
   }
 
   public void touch(String currentDir) throws Exception {

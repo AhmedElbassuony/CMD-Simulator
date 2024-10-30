@@ -57,7 +57,14 @@ public class Main {
 
         }
         case "mv" -> {
-          cmd.mv(currentDirectory.toString());
+          try {
+            cmd.mv(currentDirectory.toString());
+          } catch(IOException e) {
+            System.out.println("Cannot perform '" + e.getMessage() + "' Second path is wrong");
+          } catch(Exception e) {
+            System.out.println(e.getMessage());
+          }
+
         }
         case "cat" -> {
           if (commandArgs.isEmpty()) {
