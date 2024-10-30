@@ -17,7 +17,7 @@ public class CommandTest {
         } 
 
        
-        Main.RemoveDirectory(new ArrayList<>(List.of("testDir")), Paths.get(System.getProperty("user.dir")));
+        Main.removeDirectory(new ArrayList<>(List.of("testDir")), Paths.get(System.getProperty("user.dir")));
 
        
         assertTrue(Files.exists(testDir), "The directory should still exist because it is not a file");
