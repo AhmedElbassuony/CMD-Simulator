@@ -1,5 +1,6 @@
 package org.example;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -46,7 +47,14 @@ public class Main {
           }
         }
         case "touch" -> {
-          cmd.touch(currentDirectory.toString());
+          try {
+            cmd.touch(currentDirectory.toString());
+          } catch(IOException e) {
+            System.out.println("Cannot create file '" + e.getMessage() + "' no such path or directory");
+          } catch(Exception e) {
+            System.out.println(e.getMessage());
+          }
+
         }
         case "mv" -> {
           cmd.mv(currentDirectory.toString());

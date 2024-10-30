@@ -14,13 +14,16 @@ public class Command {
   private String command;
   private ArrayList<String> commandArgs;
 
-  Command(String command, ArrayList<String> commandArgs) {
+  public Command(String command, ArrayList<String> commandArgs) {
     this.command = command;
     this.commandArgs = commandArgs;
   }
 
   public void mv(String currentDir) {
     try {
+      if(commandArgs.isEmpty()) {
+        throw new Exception("mv: missing file operand\nTry 'mv --help' for more information.");
+      }
       if (commandArgs.size() == 1) {
         throw new Exception("mv: missing destination file operand after '" + commandArgs.get(0) + "'");
       }
@@ -48,9 +51,11 @@ public class Command {
     }
   }
 
-  public void touch(String currentDir) {
+  public void touch(String currentDir) throws Exception {
+    if(commandArgs.isEmpty()) {
+      throw new Exception("touch: missing file operand\nTry 'touch --help' for more information.");
+    }
     for (String f : commandArgs) {
-      try {
         String file = f;
         if (!Paths.get(f).isAbsolute()) {
           file = currentDir + "\\" + f;
@@ -66,11 +71,6 @@ public class Command {
         Path p = Paths.get(file);
         if (Files.exists(p)) Files.delete(p);
         Files.createFile(p);
-      } catch (IOException e) {
-        System.out.println("Cannot create '" + f + "': No such path or directory.");
-      } catch (Exception e) {
-        System.out.println(e.getMessage());
-      }
     }
   }
 
