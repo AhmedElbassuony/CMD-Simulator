@@ -1,70 +1,54 @@
 import org.example.Command;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.io.TempDir;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
 
 public class CommandTest {
- @Test
-public void testRemoveDirectory() {
+    @TempDir
+    Path tempDir;
 
-       Path testDir = Paths.get(System.getProperty("user.dir")).resolve("testDir");
+    @Test
+    public void testRemoveDirectory() {
+        Path testDir = tempDir.resolve("testDir");
 
+        
+        try {
+            Files.createDirectory(testDir);
+        } catch (IOException e) {
+            Assertions.fail("Failed to set up for the test");
+        }
 
-       try {
-           Files.deleteIfExists(testDir);
-           Files.createDirectory(testDir);
-       } catch (IOException e) {
-           fail("Failed to set up for the test");
-       }
+        Command cmd = new Command(commandArgs, currentDirectory);
+        cmd.removeDirectory(new ArrayList<>(List.of("testDir")), tempDir);
+        Assertions.assertFalse(Files.exists(testDir), "The directory should be removed");
+    }
 
+    @Test
+    public void testMakeDirectory() {
+        Path testDir = tempDir.resolve("testDir");
 
-       Main.removeDirectory(new ArrayList<>(List.of("testDir")), Paths.get(System.getProperty("user.dir")));
+        Command cmd = new Command(commandArgs, currentDirectory);
+        cmd.makeDirectory(new ArrayList<>(List.of("testDir")), tempDir);
+        Assertions.assertTrue(Files.exists(testDir), "The directory should be created");
+    }
 
+    @Test
+    public void testRemoveFile() {
+        Path testFile = tempDir.resolve("testFile.txt");
 
-       assertTrue(Files.exists(testDir), "The directory should get removed");
-   }
+     
+        try {
+            Files.createFile(testFile);
+        } catch (IOException e) {
+            Assertions.fail("Failed to create the file");
+        }
+
+        Command cmd = new Command(commandArgs, currentDirectory);
+        cmd.removeFile(new ArrayList<>(List.of("testFile.txt")), tempDir);
+        Assertions.assertFalse(Files.exists(testFile), "The file should be removed");
+    }
 }
- @Test
-public void testMakeDirectory() {
-
-       Path testDir = Paths.get(System.getProperty("user.dir")).resolve("testDir");
-
-
-       try {
-           Files.deleteIfExists(testDir);
-       } catch (IOException e) {
-           fail("Failed to clean up before the test");
-       }
-
-
-       Main.makeDirectory(new ArrayList<>(List.of("testDir")), Paths.get(System.getProperty("user.dir")));
-
-
-       assertTrue(Files.exists(testDir), "The directory should be created");
-
-
-}
- @Test
-public void testRemoveFile() {
-
-       Path testFile = Paths.get(System.getProperty("user.dir")).resolve("testFile.txt");
-
-
-       try {
-           Files.deleteIfExists(testFile);
-       } catch (IOException e) {
-           fail("Failed to clean  before doing the test");
-       }
-
-
-       try {
-           Files.createFile(testFile);
-       } catch (IOException e) {
-           fail("Failed to create the file");
-       }
-
-
-       Main.removeFile(new ArrayList<>(List.of("testFile.txt")), Paths.get(System.getProperty("user.dir")));
-
-
-       assertFalse(Files.exists(testFile), "The file should be removed");
-   }
