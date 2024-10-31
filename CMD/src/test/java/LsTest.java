@@ -128,7 +128,7 @@ public class LsTest {
   @Test
   public void testLsWithPipeline2() throws Exception {
     System.setOut(new PrintStream(outContent));
-    Command cmd = new Command("ls", new ArrayList<>(Arrays.asList("-a","|", "grep", "file")));
+    Command cmd = new Command("ls", new ArrayList<>(Arrays.asList("|", "grep", "file")));
     setUpTestFiles();
 
     cmd.ls(testDirectory);
