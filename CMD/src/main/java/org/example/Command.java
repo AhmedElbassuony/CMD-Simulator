@@ -138,16 +138,15 @@ public class Command {
       if (Files.exists(newPath) && !Files.isDirectory(newPath)) { // it is not directory or wrong path
         return readFile(newPath, content);
       } else {
-        throw new FileNotFoundException(); // This path is Directory
+        throw new IllegalArgumentException("InvalidInput"); // This path is Directory
       }
-    } catch (FileNotFoundException e) {
-      System.out.println("InvalidInput");
+    }catch (Exception e){
+      throw e;
     }
-    return content;
   }
 
   public void determineBehaviourOfCat(int index, ArrayList<String> content, Path currentDirectory) {
-    if (index == commandArgs.size()) {
+    if (index >= commandArgs.size()) {
       content.forEach(System.out::println);
       return;
     } else if (commandArgs.get(index).equals(">") || commandArgs.get(index).equals(">>")) {
@@ -175,7 +174,11 @@ public class Command {
     } else if (commandArgs.size() != 1) { // only one argument
       throw new IllegalArgumentException("The system cannot find the path specified.");
     } else {
-      currentDirectory = changeDirectory(commandArgs.getFirst(), currentDirectory);
+      try {
+        currentDirectory = changeDirectory(commandArgs.getFirst(), currentDirectory);
+      }catch (Exception e) {
+        throw new IllegalArgumentException(e);
+      }
     }
     return currentDirectory;
   }
@@ -186,11 +189,10 @@ public class Command {
       if (Files.exists(newPath) && Files.isDirectory(newPath)) {
         return newPath;
       }
-      throw new Exception();
+      throw new IllegalArgumentException("The system cannot find the path specified");
     } catch (Exception e) {
-      System.out.println("The system cannot find the path specified");
+      throw new IllegalArgumentException("The system cannot find the path specified");
     }
-    return currentDirectory;
   }
 
   public ArrayList<String> readFile(Path newPath, ArrayList<String> array) {

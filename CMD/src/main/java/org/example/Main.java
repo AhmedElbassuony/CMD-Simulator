@@ -81,7 +81,11 @@ public class Main {
               if (commandArgs.get(i).equals(">") || commandArgs.get(i).equals(">>") || commandArgs.get(i).equals("|")) {
                 break;
               }
+              try{
               contentFromFile = cmd.takeCatInputFromFile(currentDirectory, commandArgs.get(i), contentFromFile); // Take Content Of Files
+              } catch (Exception e) {
+                System.out.println(e.getMessage());
+              }
             }
             try {
               cmd.determineBehaviourOfCat(i, contentFromFile, currentDirectory);
