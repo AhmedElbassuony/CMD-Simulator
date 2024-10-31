@@ -17,7 +17,7 @@ public void testRemoveDirectory() {
        }
 
 
-       Main.removeDirectory(new ArrayList<>(List.of("testDir")), Paths.get(System.getProperty("user.dir")));
+      Command.removeDirectory(new ArrayList<>(List.of("testDir")), Paths.get(System.getProperty("user.dir")));
 
 
        assertTrue(Files.exists(testDir), "The directory should get removed");
@@ -36,7 +36,7 @@ public void testMakeDirectory() {
        }
 
 
-       Main.makeDirectory(new ArrayList<>(List.of("testDir")), Paths.get(System.getProperty("user.dir")));
+      Command.makeDirectory(new ArrayList<>(List.of("testDir")), Paths.get(System.getProperty("user.dir")));
 
 
        assertTrue(Files.exists(testDir), "The directory should be created");
@@ -63,7 +63,7 @@ public void testRemoveFile() {
        }
 
 
-       Main.removeFile(new ArrayList<>(List.of("testFile.txt")), Paths.get(System.getProperty("user.dir")));
+       Command.removeFile(new ArrayList<>(List.of("testFile.txt")), Paths.get(System.getProperty("user.dir")));
 
 
        assertFalse(Files.exists(testFile), "The file should be removed");
