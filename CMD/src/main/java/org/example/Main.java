@@ -100,6 +100,9 @@ public class Main {
         case "pwd" -> {
           System.out.println(currentDirectory);
         }
+        case "ls" -> {
+          cmd.ls(currentDirectory);
+        }
         case "help" -> {
           cmd.displayHelp();
         }
