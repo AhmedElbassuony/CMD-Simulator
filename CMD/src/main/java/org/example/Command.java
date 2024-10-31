@@ -376,4 +376,126 @@ public class Command {
     }
     return tmp;
   }
+
+    public void ls(Path currentDirectory) {
+    boolean showAll = false;
+    boolean reverseOrder = false;
+    boolean redirect = false;
+    boolean append = false;
+    boolean pipe = false;
+    String pathArg = null;
+    String filePath = null;  //for redirection
+    ArrayList<String> pipeArgs = new ArrayList<>();
+
+    // Parse command arguments
+    for (int i = 0; i < commandArgs.size(); i++) {
+      String arg = commandArgs.get(i);
+
+      switch (arg) {
+        case "-a":
+          showAll = true;
+          break;
+        case "-r":
+          reverseOrder = true;
+          break;
+        case ">":
+          redirect = true;
+          if (i + 1 < commandArgs.size()) {
+            filePath = commandArgs.get(i + 1);
+            i++;
+          } else {
+            System.out.println("ls: Error - Missing file name after '>' for redirection.");
+            return;
+          }
+          break;
+        case ">>":
+          append = true;
+          if (i + 1 < commandArgs.size()) {
+            filePath = commandArgs.get(i + 1);
+            i++;
+          } else {
+            System.out.println("ls: Error - Missing file name after '>>' for append redirection.");
+            return;
+          }
+          break;
+        case "|":
+          pipe = true;
+          if (i + 1 < commandArgs.size()) {
+            pipeArgs = new ArrayList<>(commandArgs.subList(i + 1, commandArgs.size()));
+            i = commandArgs.size();
+          } else {
+            System.out.println("ls: Error - Missing command after '|'");
+            return;
+          }
+          break;
+        default:
+          if (pathArg == null && !arg.startsWith("-")) {
+            pathArg = arg; // Capture the first non-flag argument as pathArg } else {
+            System.out.println("ls: Error - Unexpected argument: " + arg);
+            return;
+          }
+          break;
+      }
+    }
+
+    // Handle conflicting redirection arguments
+    if (redirect && append) {
+      System.out.println("ls: Error - Conflicting arguments '>' and '>>'. Use one or the other.");
+      return;
+    }
+
+    Path targetDirectory = currentDirectory;
+
+    // Resolve the target directory based on pathArg
+    if (pathArg != null) {
+      if (pathArg.equals("..")) {
+        targetDirectory = currentDirectory.getParent() != null ? currentDirectory.getParent() : currentDirectory;
+      } else if (pathArg.equals(".")) {
+        targetDirectory = currentDirectory;
+      } else {
+        targetDirectory = currentDirectory.resolve(pathArg).normalize();
+      }
+    }
+
+    File directory = targetDirectory.toFile();
+    if (!directory.exists() || !directory.isDirectory()) {
+      System.out.println("ls: Error - No such directory: '" + targetDirectory + "'");
+      return;
+    }
+
+    String[] fileList = directory.list();
+    if (fileList == null) {
+      System.out.println("ls: Error - Unable to read contents of '" + targetDirectory + "'");
+      return;
+    }
+
+    // Sort the file list
+    Arrays.sort(fileList);
+    if (reverseOrder) {
+      Collections.reverse(Arrays.asList(fileList));
+    }
+
+    ArrayList<String> output = new ArrayList<>();
+    for (String fileName : fileList) {
+      if (!showAll && fileName.startsWith(".")) continue; // Skip hidden files if -a is not set
+      output.add(fileName);
+    }
+
+    // Handle output options: redirection, appending, or piping
+    if (redirect) {
+      overWrite(output, filePath, currentDirectory);
+    } else if (append) {
+      appendWrite(output, filePath, currentDirectory);
+    } else if (pipe) {
+      if (pipeArgs.isEmpty()) {
+        System.out.println("ls: Error - Missing command for pipe '|'");
+        return;
+      }
+      pipeLine(output, pipeArgs);
+    } else {
+      // Default output to console
+      output.forEach(System.out::println);
+    }
+  }
+
 }
